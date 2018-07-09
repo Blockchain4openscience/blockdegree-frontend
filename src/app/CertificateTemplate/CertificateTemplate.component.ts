@@ -15,76 +15,50 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {CertificateTemplateService} from './CertificateTemplate.service';
-import 'rxjs/add/operator/toPromise';
+import {MatDialog} from '@angular/material';
+import {TdLoadingService} from '@covalent/core';
+import {CreateCertificateTemplateDialogComponent} from './create-certificate-template-dialog/create-certificate-template-dialog.component';
 
 @Component({
-	selector: 'app-CertificateTemplate',
+	selector: 'app-certificate-template',
 	templateUrl: './CertificateTemplate.component.html',
 	styleUrls: ['./CertificateTemplate.component.css'],
 	providers: [CertificateTemplateService]
 })
 export class CertificateTemplateComponent implements OnInit {
+	displayedColumns = ['templateId', 'administrator', 'badge', 'actions'];
 
-	myForm: FormGroup;
-	templateId = new FormControl('', Validators.required);
-	Global = new FormControl('', Validators.required);
-	typeC = new FormControl('', Validators.required);
-	badge = new FormControl('', Validators.required);
-	context = new FormControl('', Validators.required);
-	revoked = new FormControl('', Validators.required);
+
 	private allAssets;
-	private asset;
 	private currentId;
 	private errorMessage;
 
-	constructor(private serviceCertificateTemplate: CertificateTemplateService, fb: FormBuilder) {
-		this.myForm = fb.group({
-
-
-			templateId: this.templateId,
-
-
-			Global: this.Global,
-
-
-			typeC: this.typeC,
-
-
-			badge: this.badge,
-
-
-			context: this.context,
-
-
-			revoked: this.revoked
-
-
-		});
+	constructor(private serviceCertificateTemplate: CertificateTemplateService,
+							private loadingService: TdLoadingService,
+							public createAssetDialog: MatDialog,
+							public updateAssetDialog: MatDialog,
+							public deleteAssetDialog: MatDialog) {
 	};
 
 	ngOnInit(): void {
 		this.loadAll();
 	}
 
-	loadAll(): Promise<any> {
-		let tempList = [];
-		return this.serviceCertificateTemplate.getAll()
-			.toPromise()
-			.then((result) => {
+	loadAll(): void {
+		const tempList = [];
+		this.serviceCertificateTemplate.getAll()
+			.subscribe((result) => {
 				this.errorMessage = null;
 				result.forEach(asset => {
 					tempList.push(asset);
 				});
 				this.allAssets = tempList;
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
+			}, (error) => {
+				if (error === 'Server error') {
 					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else if (error == '404 - Not Found') {
+				}	else if (error === '404 - Not Found') {
 					this.errorMessage = '404 - Could not find API route. Please check your available APIs.'
-				}
-				else {
+				}	else {
 					this.errorMessage = error;
 				}
 			});
@@ -115,276 +89,170 @@ export class CertificateTemplateComponent implements OnInit {
 		return this[name].value.indexOf(value) !== -1;
 	}
 
-	addAsset(form: any): Promise<any> {
-		this.asset = {
-			$class: 'org.degree.CertificateTemplate',
-
-
-			'templateId': this.templateId.value,
-
-
-			'Global': this.Global.value,
-
-
-			'typeC': this.typeC.value,
-
-
-			'badge': this.badge.value,
-
-
-			'context': this.context.value,
-
-
-			'revoked': this.revoked.value
-
-
-		};
-
-		this.myForm.setValue({
-
-
-			'templateId': null,
-
-
-			'Global': null,
-
-
-			'typeC': null,
-
-
-			'badge': null,
-
-
-			'context': null,
-
-
-			'revoked': null
-
-
-		});
-
-		return this.serviceCertificateTemplate.addAsset(this.asset)
-			.toPromise()
-			.then(() => {
-				this.errorMessage = null;
-				this.myForm.setValue({
-
-
-					'templateId': null,
-
-
-					'Global': null,
-
-
-					'typeC': null,
-
-
-					'badge': null,
-
-
-					'context': null,
-
-
-					'revoked': null
-
-
-				});
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else {
-					this.errorMessage = error;
-				}
-			});
-	}
-
-
-	updateAsset(form: any): Promise<any> {
-		this.asset = {
-			$class: 'org.degree.CertificateTemplate',
-
-
-			'Global': this.Global.value,
-
-
-			'typeC': this.typeC.value,
-
-
-			'badge': this.badge.value,
-
-
-			'context': this.context.value,
-
-
-			'revoked': this.revoked.value
-
-
-		};
-
-		return this.serviceCertificateTemplate.updateAsset(form.get('templateId').value, this.asset)
-			.toPromise()
-			.then(() => {
-				this.errorMessage = null;
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else if (error == '404 - Not Found') {
-					this.errorMessage = '404 - Could not find API route. Please check your available APIs.'
-				}
-				else {
-					this.errorMessage = error;
-				}
-			});
-	}
-
-
-	deleteAsset(): Promise<any> {
-
-		return this.serviceCertificateTemplate.deleteAsset(this.currentId)
-			.toPromise()
-			.then(() => {
-				this.errorMessage = null;
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else if (error == '404 - Not Found') {
-					this.errorMessage = '404 - Could not find API route. Please check your available APIs.'
-				}
-				else {
-					this.errorMessage = error;
-				}
-			});
-	}
-
-	setId(id: any): void {
-		this.currentId = id;
-	}
-
-	getForm(id: any): Promise<any> {
-
-		return this.serviceCertificateTemplate.getAsset(id)
-			.toPromise()
-			.then((result) => {
-				this.errorMessage = null;
-				let formObject = {
-
-
-					'templateId': null,
-
-
-					'Global': null,
-
-
-					'typeC': null,
-
-
-					'badge': null,
-
-
-					'context': null,
-
-
-					'revoked': null
-
-
-				};
-
-
-				if (result.templateId) {
-
-					formObject.templateId = result.templateId;
-
-				} else {
-					formObject.templateId = null;
-				}
-
-				if (result.Global) {
-
-					formObject.Global = result.Global;
-
-				} else {
-					formObject.Global = null;
-				}
-
-				if (result.typeC) {
-
-					formObject.typeC = result.typeC;
-
-				} else {
-					formObject.typeC = null;
-				}
-
-				if (result.badge) {
-
-					formObject.badge = result.badge;
-
-				} else {
-					formObject.badge = null;
-				}
-
-				if (result.context) {
-
-					formObject.context = result.context;
-
-				} else {
-					formObject.context = null;
-				}
-
-				if (result.revoked) {
-
-					formObject.revoked = result.revoked;
-
-				} else {
-					formObject.revoked = null;
-				}
-
-
-				this.myForm.setValue(formObject);
-
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else if (error == '404 - Not Found') {
-					this.errorMessage = '404 - Could not find API route. Please check your available APIs.'
-				}
-				else {
-					this.errorMessage = error;
-				}
-			});
-
-	}
-
-	resetForm(): void {
-		this.myForm.setValue({
-
-
-			'templateId': null,
-
-
-			'Global': null,
-
-
-			'typeC': null,
-
-
-			'badge': null,
-
-
-			'context': null,
-
-
-			'revoked': null
-
-
+	// updateAsset(form: any): void {
+	// 	this.asset = {
+	// 		$class: 'org.degree.CertificateTemplate',
+	// 		'globalAdministrator': this.globalAdministrator.value,
+	// 		// 'typeC': this.typeC.value,
+	// 		'badge': this.badgeForm.value,
+	// 		// 'context': this.context.value,
+	// 		// 'revoked': this.revoked.value
+	// 	};
+	//
+	// 	this.serviceCertificateTemplate.updateAsset(form.get('templateId').value, this.asset)
+	// 		.subscribe(
+	// 			() => {
+	// 				this.errorMessage = null;
+	// 			},
+	// 			(error) => {
+	// 				if (error === 'Server error') {
+	// 					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+	// 				}	else if (error === '404 - Not Found') {
+	// 					this.errorMessage = '404 - Could not find API route. Please check your available APIs.';
+	// 				} else {
+	// 					this.errorMessage = error;
+	// 				}
+	// 			});
+	// }
+	//
+	// deleteAsset(): void {
+	// 	this.serviceCertificateTemplate.deleteAsset(this.currentId)
+	// 		.subscribe(
+	// 			() => {
+	// 				this.errorMessage = null;
+	// 			},
+	// 			(error) => {
+	// 				if (error === 'Server error') {
+	// 					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+	// 				}	else if (error === '404 - Not Found') {
+	// 					this.errorMessage = '404 - Could not find API route. Please check your available APIs.';
+	// 				}	else {
+	// 					this.errorMessage = error;
+	// 				}
+	// 			});
+	// }
+	//
+	// setId(id: any): void {
+	// 	this.currentId = id;
+	// }
+	//
+	// getForm(id: any): void {
+	//
+	// 	this.serviceCertificateTemplate.getAsset(id)
+	// 		.subscribe(
+	// 			(result) => {
+	// 			this.errorMessage = null;
+	// 			const formObject = {
+	// 				'templateId': null,
+	// 				'globalAdministrator': null,
+	// 				// 'typeC': null,
+	// 				'badge': null,
+	// 				// 'context': null,
+	// 				// 'revoked': null
+	// 			};
+	//
+	// 			if (result.templateId) {
+	// 				formObject.templateId = result.templateId;
+	// 			} else {
+	// 				formObject.templateId = null;
+	// 			}
+	//
+	// 			if (result.globalAdministrator) {
+	// 				formObject.globalAdministrator = result.globalAdministrator;
+	// 			} else {
+	// 				formObject.globalAdministrator = null;
+	// 			}
+	//
+	// 			// if (result.typeC) {
+	// 			// 	formObject.typeC = result.typeC;
+	// 			// } else {
+	// 			// 	formObject.typeC = null;
+	// 			// }
+	//
+	// 			if (result.badge) {
+	// 				formObject.badge = result.badge;
+	// 			} else {
+	// 				formObject.badge = null;
+	// 			}
+	//
+	// 			// if (result.context) {
+	// 			// 	formObject.context = result.context;
+	// 			// } else {
+	// 			// 	formObject.context = null;
+	// 			// }
+	// 			//
+	// 			// if (result.revoked) {
+	// 			// 	formObject.revoked = result.revoked;
+	// 			// } else {
+	// 			// 	formObject.revoked = null;
+	// 			// }
+	//
+	// 			this.certificateTemplateForm.setValue(formObject);
+	//
+	// 		},
+	// 			(error) => {
+	// 			if (error === 'Server error') {
+	// 				this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+	// 			}	else if (error === '404 - Not Found') {
+	// 				this.errorMessage = '404 - Could not find API route. Please check your available APIs.';
+	// 			}	else {
+	// 				this.errorMessage = error;
+	// 			}
+	// 		});
+	// }
+
+	openCreateAssetDialog(): void {
+		const dialogRef = this.createAssetDialog.open(CreateCertificateTemplateDialogComponent);
+
+		dialogRef.afterClosed().subscribe(result => {
+			if (result && result.update) {
+				this.loadAll();
+			}
+		}, error => {
+			console.error(error);
 		});
 	}
 
+	// openUpdateAssetDialog(id: any): void {
+	// 	const dialogRef = this.updateAssetDialog.open(UpdateResearchOJDialogComponent, {
+	// 		data: { id: id }
+	// 	});
+	//
+	// 	dialogRef.afterClosed().subscribe(result => {
+	// 		if (result && result.update) {
+	// 			this.loadAll();
+	// 		}
+	// 	}, error => {
+	// 		console.error(error);
+	// 	});
+	// }
+	//
+	// openDeleteAssetDialog(id: any): void {
+	// 	const dialogRef = this.deleteAssetDialog.open(DeleteResearchOJDialogComponent, {
+	// 		data: { id: id }
+	// 	});
+	//
+	// 	dialogRef.afterClosed().subscribe(result => {
+	// 		if (result && result.update) {
+	// 			this.loadAll();
+	// 		}
+	// 	}, error => {
+	// 		console.error(error);
+	// 	});
+	// }
+
+	parseHyperledgerID(value: String): String {
+		if (value) {
+			value = value.split('#')[1];
+		}
+		return value;
+	}
+
+	registerLoading(key: string = 'loading'): void {
+		this.loadingService.register(key);
+	}
+
+	resolveLoading(key: string = 'loading'): void {
+		this.loadingService.resolve(key);
+	}
 }

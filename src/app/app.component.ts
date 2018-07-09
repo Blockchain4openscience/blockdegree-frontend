@@ -72,6 +72,14 @@ export class AppComponent implements AfterViewInit {
 
 	routes = [
 		{
+			displayName: 'Certificate Templates',
+			name: '/certificate-templates'
+		},
+		{
+			displayName: 'Issue Certificates',
+			name: '/issue-certificates'
+		},
+		{
 			displayName: 'Verify Certificate',
 			name: '/verify-certificate'
 		}

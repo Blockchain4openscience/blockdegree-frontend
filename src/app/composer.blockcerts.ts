@@ -9,7 +9,7 @@ export abstract class Certificate extends Asset {
 }
 
 export class Badge {
-	Id: string;
+	id: string;
 	typen: string;
 	name: string;
 	description: string;
@@ -19,7 +19,7 @@ export class Badge {
 }
 
 export class Issuer {
-	Id: string;
+	id: string;
 	typen: string;
 	name: string;
 	urln: string;
@@ -38,7 +38,7 @@ export class SignatureLines {
 }
 
 export class School {
-	Id: string;
+	id: string;
 	typen: string;
 	name: string;
 	urln: string;

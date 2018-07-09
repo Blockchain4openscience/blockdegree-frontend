@@ -24,6 +24,9 @@ import {AngularMaterialModule} from './angular-material/angular-material.module'
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MglTimelineModule} from 'angular-mgl-timeline';
 import {VerifyCertificateComponent} from './verify-certificate/verify-certificate.component';
+import {CertificateTemplateComponent} from './CertificateTemplate/CertificateTemplate.component';
+import { CreateCertificateTemplateDialogComponent } from './CertificateTemplate/create-certificate-template-dialog/create-certificate-template-dialog.component';
+import {AddRosterComponent} from './AddRoster/AddRoster.component';
 
 // import { TransactionComponent } from './Transaction/Transaction.component'
 
@@ -31,9 +34,13 @@ import {VerifyCertificateComponent} from './verify-certificate/verify-certificat
 	declarations: [
 		AppComponent,
 		HomeComponent,
-		VerifyCertificateComponent
+		CertificateTemplateComponent,
+		VerifyCertificateComponent,
+		AddRosterComponent,
+		CreateCertificateTemplateDialogComponent
 	],
 	entryComponents: [
+		CreateCertificateTemplateDialogComponent
 	],
 	imports: [
 		BrowserModule,

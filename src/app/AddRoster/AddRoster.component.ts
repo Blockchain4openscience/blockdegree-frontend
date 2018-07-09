@@ -13,12 +13,13 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {AddRosterService} from './AddRoster.service';
-import 'rxjs/add/operator/toPromise';
+import {TdLoadingService} from '@covalent/core';
+import * as csv from 'papaparse';
 
 @Component({
-	selector: 'app-AddRoster',
+	selector: 'app-add-roster',
 	templateUrl: './AddRoster.component.html',
 	styleUrls: ['./AddRoster.component.css'],
 	providers: [AddRosterService]
@@ -26,65 +27,26 @@ import 'rxjs/add/operator/toPromise';
 export class AddRosterComponent implements OnInit {
 
 	myForm: FormGroup;
-	templateId = new FormControl('', Validators.required);
-	localAdministrator = new FormControl('', Validators.required);
-	recipientsInfo = new FormControl('', Validators.required);
-	transactionId = new FormControl('', Validators.required);
-	timestamp = new FormControl('', Validators.required);
-	private allTransactions;
+	templateId = new FormControl(null, Validators.required);
+	localAdministrator = new FormControl(null, Validators.required);
+	rosterFile = new FormControl(null, [Validators.required, this.fileTypeValidator()]);
+
+	file: File;
+
 	private Transaction;
-	private currentId;
 	private errorMessage;
 
-	constructor(private serviceAddRoster: AddRosterService, fb: FormBuilder) {
+	constructor(private serviceAddRoster: AddRosterService,
+							private loadingService: TdLoadingService,
+							fb: FormBuilder) {
 		this.myForm = fb.group({
-
-
 			templateId: this.templateId,
-
-
 			localAdministrator: this.localAdministrator,
-
-
-			recipientsInfo: this.recipientsInfo,
-
-
-			transactionId: this.transactionId,
-
-
-			timestamp: this.timestamp
-
-
+			rosterFile: this.rosterFile,
 		});
 	};
 
-	ngOnInit(): void {
-		this.loadAll();
-	}
-
-	loadAll(): Promise<any> {
-		let tempList = [];
-		return this.serviceAddRoster.getAll()
-			.toPromise()
-			.then((result) => {
-				this.errorMessage = null;
-				result.forEach(transaction => {
-					tempList.push(transaction);
-				});
-				this.allTransactions = tempList;
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else if (error == '404 - Not Found') {
-					this.errorMessage = '404 - Could not find API route. Please check your available APIs.'
-				}
-				else {
-					this.errorMessage = error;
-				}
-			});
-	}
+	ngOnInit(): void {}
 
 	/**
 	 * Event handler for changing the checked state of a checkbox (handles array enumeration values)
@@ -111,251 +73,95 @@ export class AddRosterComponent implements OnInit {
 		return this[name].value.indexOf(value) !== -1;
 	}
 
-	addTransaction(form: any): Promise<any> {
-		this.Transaction = {
-			$class: 'org.degree.AddRoster',
+	async submit(): Promise<any> {
+		this.errorMessage = null;
+		if (this.myForm.valid) {
+			this.registerLoading();
+			this.Transaction = {
+				$class: 'org.degree.AddRoster',
+				'templateId': this.templateId.value,
+				'localAdministrator': this.localAdministrator.value,
+				'recipientsInfo': await this.parseRosterFile(this.rosterFile.value)
+			};
 
+			console.log(this.Transaction.recipientsInfo);
 
-			'templateId': this.templateId.value,
-
-
-			'localAdministrator': this.localAdministrator.value,
-
-
-			'recipientsInfo': this.recipientsInfo.value,
-
-
-			'transactionId': this.transactionId.value,
-
-
-			'timestamp': this.timestamp.value
-
-
-		};
-
-		this.myForm.setValue({
-
-
-			'templateId': null,
-
-
-			'localAdministrator': null,
-
-
-			'recipientsInfo': null,
-
-
-			'transactionId': null,
-
-
-			'timestamp': null
-
-
-		});
-
-		return this.serviceAddRoster.addTransaction(this.Transaction)
-			.toPromise()
-			.then(() => {
-				this.errorMessage = null;
-				this.myForm.setValue({
-
-
-					'templateId': null,
-
-
-					'localAdministrator': null,
-
-
-					'recipientsInfo': null,
-
-
-					'transactionId': null,
-
-
-					'timestamp': null
-
-
+			this.serviceAddRoster.addTransaction(this.Transaction)
+				.subscribe(() => {
+					this.errorMessage = null;
+					this.myForm.reset();
+					this.rosterFile.markAsUntouched();
+					this.rosterFile.markAsPristine();
+					this.resolveLoading();
+				}, (error) => {
+					if (error === 'Server error') {
+						this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+					} else {
+						this.errorMessage = error;
+					}
+					this.resolveLoading();
 				});
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else {
-					this.errorMessage = error;
-				}
+		} else {
+			Object.keys(this.myForm.controls).forEach(field => {
+				const control = this.myForm.get(field);
+				control.markAsTouched({ onlySelf: true });
+				// console.log(field, control.errors);
 			});
+		}
 	}
 
-
-	updateTransaction(form: any): Promise<any> {
-		this.Transaction = {
-			$class: 'org.degree.AddRoster',
-
-
-			'templateId': this.templateId.value,
-
-
-			'localAdministrator': this.localAdministrator.value,
-
-
-			'recipientsInfo': this.recipientsInfo.value,
-
-
-			'timestamp': this.timestamp.value
-
-
-		};
-
-		return this.serviceAddRoster.updateTransaction(form.get('transactionId').value, this.Transaction)
-			.toPromise()
-			.then(() => {
-				this.errorMessage = null;
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else if (error == '404 - Not Found') {
-					this.errorMessage = '404 - Could not find API route. Please check your available APIs.'
-				}
-				else {
-					this.errorMessage = error;
-				}
+	parseRosterFile(file: File): Promise<any> {
+		return new Promise<any>((resolve, reject) => {
+			csv.parse(file, {
+				complete: (results, f) => {
+					const data = results.data;
+					const recipientsInfo = [];
+					for (let i = 0; i < data.length; i++) {
+						if (data[i].length === 4) {
+							const recpientInfo = {
+								certId: data[i][0],
+								recipient: {
+									email: data[i][1],
+								},
+								recipientProfile: {
+									name: data[i][2],
+									publicKey: data[i][3]
+								}
+							};
+							recipientsInfo.push(recpientInfo);
+						} else {
+							this.errorMessage = 'Malformed CSV file.';
+							break;
+						}
+					}
+					resolve(recipientsInfo);
+				},
+				error: (error, f) => {
+					reject(error);
+				},
+				skipEmptyLines: true
 			});
-	}
-
-
-	deleteTransaction(): Promise<any> {
-
-		return this.serviceAddRoster.deleteTransaction(this.currentId)
-			.toPromise()
-			.then(() => {
-				this.errorMessage = null;
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else if (error == '404 - Not Found') {
-					this.errorMessage = '404 - Could not find API route. Please check your available APIs.'
-				}
-				else {
-					this.errorMessage = error;
-				}
-			});
-	}
-
-	setId(id: any): void {
-		this.currentId = id;
-	}
-
-	getForm(id: any): Promise<any> {
-
-		return this.serviceAddRoster.getTransaction(id)
-			.toPromise()
-			.then((result) => {
-				this.errorMessage = null;
-				let formObject = {
-
-
-					'templateId': null,
-
-
-					'localAdministrator': null,
-
-
-					'recipientsInfo': null,
-
-
-					'transactionId': null,
-
-
-					'timestamp': null
-
-
-				};
-
-
-				if (result.templateId) {
-
-					formObject.templateId = result.templateId;
-
-				} else {
-					formObject.templateId = null;
-				}
-
-				if (result.localAdministrator) {
-
-					formObject.localAdministrator = result.localAdministrator;
-
-				} else {
-					formObject.localAdministrator = null;
-				}
-
-				if (result.recipientsInfo) {
-
-					formObject.recipientsInfo = result.recipientsInfo;
-
-				} else {
-					formObject.recipientsInfo = null;
-				}
-
-				if (result.transactionId) {
-
-					formObject.transactionId = result.transactionId;
-
-				} else {
-					formObject.transactionId = null;
-				}
-
-				if (result.timestamp) {
-
-					formObject.timestamp = result.timestamp;
-
-				} else {
-					formObject.timestamp = null;
-				}
-
-
-				this.myForm.setValue(formObject);
-
-			})
-			.catch((error) => {
-				if (error == 'Server error') {
-					this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-				}
-				else if (error == '404 - Not Found') {
-					this.errorMessage = '404 - Could not find API route. Please check your available APIs.'
-				}
-				else {
-					this.errorMessage = error;
-				}
-			});
-
-	}
-
-	resetForm(): void {
-		this.myForm.setValue({
-
-
-			'templateId': null,
-
-
-			'localAdministrator': null,
-
-
-			'recipientsInfo': null,
-
-
-			'transactionId': null,
-
-
-			'timestamp': null
-
-
 		});
 	}
 
+	fileTypeValidator(): ValidatorFn {
+		return (control: AbstractControl): {[key: string]: any} | null => {
+			if (control.value instanceof File) {
+				console.log(control.value.type);
+				if (control.value.type !== 'text/csv') {
+					return { 'forbiddenType': { value: control.value } };
+				}
+			}
+			return null;
+		};
+	}
+
+	registerLoading(key: string = 'loading'): void {
+		this.loadingService.register(key);
+	}
+
+	resolveLoading(key: string = 'loading'): void {
+		this.loadingService.resolve(key);
+	}
 }
 

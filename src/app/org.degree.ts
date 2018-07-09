@@ -13,7 +13,7 @@ export class UserExternal extends Person {
 
 export class CertificateTemplate extends Certificate {
 	templateId: string;
-	Global: Administrator;
+	globalAdministrator: Administrator;
 }
 
 export class PersonalCertificate extends Asset {

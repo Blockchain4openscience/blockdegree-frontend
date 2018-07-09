@@ -38,7 +38,8 @@ import {
 	CovalentNotificationsModule,
 	CovalentPagingModule,
 	CovalentSearchModule,
-	CovalentStepsModule
+	CovalentStepsModule,
+	CovalentFileModule
 } from '@covalent/core';
 
 
@@ -84,6 +85,7 @@ import {
 		CovalentMenuModule,
 		CovalentDataTableModule,
 		CovalentMessageModule,
+		CovalentFileModule
 	],
 	exports: [
 		/** Material Modules */
@@ -126,6 +128,7 @@ import {
 		CovalentMenuModule,
 		CovalentDataTableModule,
 		CovalentMessageModule,
+		CovalentFileModule
 	]
 })
 export class AngularMaterialModule {

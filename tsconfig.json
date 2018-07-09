@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "baseUrl": "src",
+		"paths": { "stream": [ "../node_modules/readable-stream" ] },
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
