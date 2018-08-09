@@ -14,6 +14,8 @@
 
 import {AfterViewInit, Component} from '@angular/core';
 import {TdMediaService} from '@covalent/core';
+import {MatIconRegistry} from '@angular/material';
+import {DomSanitizer} from '@angular/platform-browser';
 
 @Component({
 	selector: 'app-root',
@@ -89,7 +91,14 @@ export class AppComponent implements AfterViewInit {
 	// participantRoutes = this.routes[1].list;
 	// transactionRoutes = this.routes[2].list;
 
-	constructor(public mediaService: TdMediaService) {
+	constructor(
+		private matIconRegistry: MatIconRegistry,
+		private domSanitizer: DomSanitizer
+	) {
+		this.matIconRegistry.addSvgIcon(
+			'google',
+			this.domSanitizer.bypassSecurityTrustResourceUrl('assets/google.svg')
+		);
 	}
 
 	ngAfterViewInit() {

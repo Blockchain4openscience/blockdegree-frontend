@@ -1,14 +1,19 @@
 import {Asset, Transaction} from './org.hyperledger.composer.system';
 import {Certificate} from './composer.blockcerts';
-import {Person} from './composer.base';
 
 // export namespace org.degree{
-export class Administrator extends Person {
+export class Administrator {
 	email: string;
+	firstName: string;
+	lastName: string;
+	publicKey: string;
 }
 
-export class UserExternal extends Person {
+export class ExternalUser {
 	email: string;
+	firstName: string;
+	lastName: string;
+	publicKey: string;
 }
 
 export class CertificateTemplate extends Certificate {
