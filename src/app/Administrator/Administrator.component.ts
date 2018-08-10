@@ -236,7 +236,7 @@ export class AdministratorComponent implements OnInit {
 
 	getForm(id: any): Promise<any> {
 
-		return this.serviceAdministrator.getparticipant(id)
+		return this.serviceAdministrator.getParticipant(id)
 			.toPromise()
 			.then((result) => {
 				this.errorMessage = null;

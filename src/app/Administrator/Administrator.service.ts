@@ -18,7 +18,9 @@ import {Observable} from 'rxjs';
 import {Administrator} from '../org.degree';
 
 // Can be injected into a constructor
-@Injectable()
+@Injectable({
+	providedIn: 'root'
+})
 export class AdministratorService {
 
 
@@ -32,7 +34,7 @@ export class AdministratorService {
 		return this.dataService.getAll(this.NAMESPACE);
 	}
 
-	public getparticipant(id: any): Observable<Administrator> {
+	public getParticipant(id: any): Observable<Administrator> {
 		return this.dataService.getSingle(this.NAMESPACE, id);
 	}
 

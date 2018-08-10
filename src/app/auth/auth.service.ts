@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {Administrator, ExternalUser} from '../org.degree';
 import {Observable} from 'rxjs';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {AdministratorService} from '../Administrator/Administrator.service';
 
 @Injectable({
 	providedIn: 'root'
@@ -10,21 +11,17 @@ export class AuthService {
 
 	currentUser: Administrator;
 
-	constructor(private httpClient: HttpClient) { }
+	constructor(private httpClient: HttpClient,
+							private administratorService: AdministratorService) {
+		this.currentUser = null;
+	}
 
-	signUp(data): Promise<any> {
-		const administrator = {
-			$class: 'org.degree.Administrator',
-			email: data.email,
-			firstName: data.firstName,
-			lastName: data.lastName
-		};
-
-		return this.httpClient.post('http://localhost:3001/api/org.degree.Administrator', administrator).toPromise()
+	signUp(administrator): Promise<any> {
+		return this.httpClient.post('http://localhost:3001/api/Administrator', administrator).toPromise()
 			.then(() => {
 				const identity = {
-					participant: 'org.degree.Administrator#' + data.email,
-					userID: data.email,
+					participant: 'org.degree.Administrator#' + administrator.email,
+					userID: administrator.email,
 					options: {}
 				};
 
@@ -62,11 +59,21 @@ export class AuthService {
 		return this.httpClient.get('http://localhost:3000/api/wallet', {withCredentials: true})
 			.toPromise()
 			.then(results => {
+				console.log(results);
 				return results['length'] > 0;
 			})
 			.catch(error => {
 				console.log(error);
 				return false;
+			});
+	}
+
+	async setCurrentUser(): Promise<void> {
+		this.currentUser = await this.httpClient.get('http://localhost:3000/api/system/ping', {withCredentials: true}).toPromise()
+			.then((data) => {
+				console.log(data);
+				const id = data['participant'].split('#')[1];
+				return this.administratorService.getParticipant(id).toPromise();
 			});
 	}
 

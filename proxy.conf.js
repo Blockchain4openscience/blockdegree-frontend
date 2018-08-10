@@ -30,7 +30,7 @@ function getTarget() {
 const target = getTarget();
 
 module.exports = [{
-	context: ['/auth', '/api'],
+	context: ['/api'],
 	target: target,
 	secure: true,
 	changeOrigin: true

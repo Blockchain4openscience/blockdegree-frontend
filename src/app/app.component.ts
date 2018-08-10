@@ -16,6 +16,7 @@ import {AfterViewInit, Component} from '@angular/core';
 import {TdMediaService} from '@covalent/core';
 import {MatIconRegistry} from '@angular/material';
 import {DomSanitizer} from '@angular/platform-browser';
+import {AuthService} from './auth/auth.service';
 
 @Component({
 	selector: 'app-root',
@@ -92,6 +93,7 @@ export class AppComponent implements AfterViewInit {
 	// transactionRoutes = this.routes[2].list;
 
 	constructor(
+		private authService: AuthService,
 		private matIconRegistry: MatIconRegistry,
 		private domSanitizer: DomSanitizer
 	) {
