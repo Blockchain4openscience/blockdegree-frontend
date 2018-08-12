@@ -9,6 +9,10 @@ In this posting we will be deploying into a [single-organization](https://hyperl
 
 ## Deployment of Hyperledger Fabric onto a single-organization  
 
+First we need to intall the version of node and npm that is compatible with composer and fabric.
+`````
+nvm install 8.9
+`````
 Follow *steps one and two* from the tutorial: 1-Starting a Hyperledger Fabric network; 2-Exploring the Hyperledger Fabric network.
 
 In *step three* create a folder called `certificates` and follow the instructions:
@@ -24,36 +28,48 @@ Follow *step six* to import the business network card for the Hyperledger Fabric
 `````
 composer card import -f PeerAdmin@fabric-network.card
 `````
-In *step seven* we install the Hyperledger Composer business network onto the Hyperledger Fabric peer nodes. The business network `degree` is defined in bna file, `degree@0.0.1.bna` and its located in the repository. A forlder with the specific business network model files, scripts and queries that are packaged in the bna file (using `composer archive create`) is located in the [blockdegree repository](https://github.com/ccastroiragorri/blockdegree/tree/master/degree-bnav2). 
+In *step seven* we install the Hyperledger Composer business network onto the Hyperledger Fabric peer nodes. The business network `block-degree` is defined in bna file, `block-degree@0.0.1.bna` and its located in the repository. A forlder with the specific business network model files, scripts and queries that are packaged in the bna file (using `composer archive create`) is located in the [blockdegree repository](https://github.com/ccastroiragorri/blockdegree/tree/master/degree-bnav2). 
 `````
-composer network install -c PeerAdmin@fabric-network -a degree@0.0.1.bna
+composer network install -c PeerAdmin@fabric-network -a block-degree@0.0.1.bna
 `````
 In *step eight* we start the blockchain business network
 `````
-composer network start --networkName degree --networkVersion 0.0.1 -A admin -S adminpw -c PeerAdmin@fabric-network
+composer network start --networkName block-degree --networkVersion 0.0.1 -A admin -S adminpw -c PeerAdmin@fabric-network
 `````
 In *step nine* we import the business network card for the business network administrator
 `````
-composer card import -f admin@degree.card
+composer card import -f admin@block-degree.card
 `````
 In *step ten* we test the connection to the blockchain business network
 `````
-composer network ping -c admin@degree
+composer network ping -c admin@block-degree
 `````
-## Interacting with the business network using the REST server
 
+## Interacting with the business network using the REST server and the Angular application
+
+To allow users to log-in with the google api we need first to install the [passport](http://www.passportjs.org/).
+`````
+npm install -g passport-google-oauth2
+`````
 To create the REST API run the following command: 
 `````
-composer-rest-server
+composer-rest-server  -c admin@block-degree -n never -p 3001
 `````
-use `admin@degree` as the card name and select: never use namespaces; not to secure the generated API; yes to enable event publication; no to enable TLS security.
+use `admin@block-degree` as the card name.
 
-## Interacting with an Angular application
+In a different console we must start a second REST server
+`````
+export COMPOSER_PROVIDERS='{    "google": {        "provider": "google",        "module": "passport-google-oauth2",        "clientID": "449143484410-cd3p44o8qgbcihfmck8lu4uj6s5t4c0j.apps.googleusercontent.com",        "clientSecret": "YyEbhukLeI1ndcbpJQVpn3c4",        "authPath": "/auth/google",        "callbackURL": "/auth/google/callback",        "scope": "https://www.googleapis.com/auth/plus.login",        "successRedirect": "http://localhost:4200/callback",        "failureRedirect": "/"    }}'
+`````
+`````
+composer-rest-server -c admin@block-degree -n never -a true -m true -w true
+`````
+use `admin@block-degree` as the card name.
 
 In order to build the user interfaces for this busness network please clone the repository and follow the instructions
 
 `````
-git clone https://github.com/Blockchain4openscience/bforos-frontend
+git clone https://github.com/Camilo1090/blockdegree-frontend
 `````
 Now navigate to the folder. Check that npm is installed by running
 `````
@@ -68,7 +84,8 @@ Once the installation is complete run,
 npm start
 `````
 and navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files. 
-Once the app is loaded use the [example](https://github.com/ccastroiragorri/blockdegree/blob/master/degree-bnav2/README.md) to test the functionality of the business network. 
+
+Once the app is loaded log-in with gmail account and create administrator then follow the instructions to create the certificate template, personalize the certificates and verify the certificates. Use the [example](https://github.com/ccastroiragorri/blockdegree/blob/master/degree-bnav2/README.md) designed for the hyperledger playground to test the functionality of the business network using the bna deployed onto fabric and the frontends. 
 
 ## Destroy a previous set up
 After testing the bna desgined with Composer and deployed onto Fabric it is important to tidy up by stopping fabric. Navigate to the folder where you initially started the Hyperledger Fabric network.
