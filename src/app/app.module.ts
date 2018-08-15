@@ -24,11 +24,7 @@ import {AngularMaterialModule} from './angular-material/angular-material.module'
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MglTimelineModule} from 'angular-mgl-timeline';
 import {VerifyCertificateComponent} from './verify-certificate/verify-certificate.component';
-import {CertificateTemplateComponent} from './CertificateTemplate/CertificateTemplate.component';
-import { CreateCertificateTemplateDialogComponent } from './CertificateTemplate/create-certificate-template-dialog/create-certificate-template-dialog.component';
-import {AddRosterComponent} from './AddRoster/AddRoster.component';
-import { AuthCallbackComponent } from './auth/auth-callback/auth-callback.component';
-import { AuthSignupComponent } from './auth/auth-signup/auth-signup.component';
+
 
 // import { TransactionComponent } from './Transaction/Transaction.component'
 
@@ -36,15 +32,9 @@ import { AuthSignupComponent } from './auth/auth-signup/auth-signup.component';
 	declarations: [
 		AppComponent,
 		HomeComponent,
-		CertificateTemplateComponent,
-		VerifyCertificateComponent,
-		AddRosterComponent,
-		CreateCertificateTemplateDialogComponent,
-		AuthCallbackComponent,
-		AuthSignupComponent
+		VerifyCertificateComponent
 	],
 	entryComponents: [
-		CreateCertificateTemplateDialogComponent
 	],
 	imports: [
 		BrowserModule,

@@ -16,7 +16,6 @@ import {AfterViewInit, Component} from '@angular/core';
 import {TdMediaService} from '@covalent/core';
 import {MatIconRegistry} from '@angular/material';
 import {DomSanitizer} from '@angular/platform-browser';
-import {AuthService} from './auth/auth.service';
 
 @Component({
 	selector: 'app-root',
@@ -75,14 +74,6 @@ export class AppComponent implements AfterViewInit {
 
 	routes = [
 		{
-			displayName: 'Certificate Templates',
-			name: '/certificate-templates'
-		},
-		{
-			displayName: 'Issue Certificates',
-			name: '/issue-certificates'
-		},
-		{
 			displayName: 'Verify Certificate',
 			name: '/verify-certificate'
 		}
@@ -91,17 +82,6 @@ export class AppComponent implements AfterViewInit {
 	// assetRoutes = this.routes[0].list;
 	// participantRoutes = this.routes[1].list;
 	// transactionRoutes = this.routes[2].list;
-
-	constructor(
-		private authService: AuthService,
-		private matIconRegistry: MatIconRegistry,
-		private domSanitizer: DomSanitizer
-	) {
-		this.matIconRegistry.addSvgIcon(
-			'google',
-			this.domSanitizer.bypassSecurityTrustResourceUrl('assets/google.svg')
-		);
-	}
 
 	ngAfterViewInit() {
 		// $('.nav a').on('click', function () {

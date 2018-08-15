@@ -17,19 +17,11 @@ import {RouterModule, Routes} from '@angular/router';
 // import { TransactionComponent } from './Transaction/Transaction.component'
 import {HomeComponent} from './home/home.component';
 import {VerifyCertificateComponent} from './verify-certificate/verify-certificate.component';
-import {CertificateTemplateComponent} from './CertificateTemplate/CertificateTemplate.component';
-import {AddRosterComponent} from './AddRoster/AddRoster.component';
-import {AuthCallbackComponent} from './auth/auth-callback/auth-callback.component';
-import {AuthSignupComponent} from './auth/auth-signup/auth-signup.component';
 
 const routes: Routes = [
 	// { path: 'transaction', component: TransactionComponent },
 	{path: '', component: HomeComponent},
-	{path: 'certificate-templates', component: CertificateTemplateComponent},
-	{path: 'issue-certificates', component: AddRosterComponent},
 	{path: 'verify-certificate', component: VerifyCertificateComponent},
-	{path: 'callback', component: AuthCallbackComponent},
-	{path: 'signup', component: AuthSignupComponent},
 	{path: '**', redirectTo: ''}
 ];
 

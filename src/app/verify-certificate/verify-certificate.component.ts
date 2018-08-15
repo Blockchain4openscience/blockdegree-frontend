@@ -2,14 +2,18 @@ import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {TdLoadingService} from '@covalent/core';
 import {VerifyCertificateService} from './verify-certificate.service';
+import {AdministratorService} from './Administrator.service';
+import {CertificateTemplateService} from './CertificateTemplate.service'
 import {sha256} from '../shared/sha256'
 import {PersonalCertificate} from '../org.degree';
+import {Administrator} from '../org.degree';
+import {CertificateTemplate} from '../org.degree';
 
 @Component({
 	selector: 'app-verify-certificate',
 	templateUrl: './verify-certificate.component.html',
 	styleUrls: ['./verify-certificate.component.css'],
-	providers: [VerifyCertificateService]
+	providers: [VerifyCertificateService, AdministratorService, CertificateTemplateService]
 })
 export class VerifyCertificateComponent implements OnInit {
 
@@ -18,13 +22,16 @@ export class VerifyCertificateComponent implements OnInit {
 	successMessage: string;
 
 	private Transaction;
+	private certificate;
+	administrator: Administrator;
+	certificateTemplate: CertificateTemplate;
 
 	certId = new FormControl(null, Validators.required);
-	// transactionId = new FormControl('', Validators.required);
-	// timestamp = new FormControl('', Validators.required);
 
 	currentCertId: string = null;
-	steps = [
+	templateId: string = null;
+	administratorId: string = null;
+	/*steps = [
 		{
 			name: 'Certificate Integrity',
 			done: false,
@@ -35,15 +42,15 @@ export class VerifyCertificateComponent implements OnInit {
 			done: false,
 			passed: false,
 		}
-	];
+	];*/
 
 	constructor(private verifyCertificateService: VerifyCertificateService,
-							private loadingService: TdLoadingService,
-							public fb: FormBuilder) {
+				private administratorService: AdministratorService,
+				private certificateTemplateService: CertificateTemplateService,
+				private loadingService: TdLoadingService,
+				public fb: FormBuilder) {
 		this.myForm = fb.group({
-			certId: this.certId,
-			// transactionId: this.transactionId,
-			// timestamp: this.timestamp
+			certId: this.certId
 		});
 	};
 
@@ -76,17 +83,57 @@ export class VerifyCertificateComponent implements OnInit {
 
 	submit(): void {
 		this.successMessage = null;
+		
 		if (this.myForm.valid) {
 			this.registerLoading();
 			this.verifyCertificateService.getAsset(this.certId.value).subscribe(
 				(result) => {
+					
 					this.currentCertId = this.certId.value;
 					this.errorMessage = null;
-					this.myForm.reset();
-					// this.successMessage = ' Transaction ' + result.transactionId + ' submitted successfully.';
+					//this.myForm.reset();
+					this.certificate = result;
+					this.templateId = this.certificate['templateId'];
+					this.administratorId = this.certificate['localAdministrator']
+					this.certificate.templateId = this.templateId.substring(this.templateId.indexOf("#") + 1, this.templateId.length);
+					this.certificate.localAdministrator = this.administratorId.substring(this.administratorId.indexOf("#") + 1, this.administratorId.length);
 					this.successMessage = null;
-					console.log(result);
-					this.verify(result);
+					//console.log(this.templateId);
+					/*
+					this.administratorService.getParticipant(this.certificate.localAdministrator).subscribe(
+						(result) => {
+							this.errorMessage = null;
+							this.administrator = result;
+							//console.log(result);	
+							this.successMessage = null;
+						},
+						(error) => {
+							if (error === 'Server error') {
+								this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+							} else {
+								this.errorMessage = error;
+								
+							}
+						});
+				*/
+					this.certificateTemplateService.getAsset(this.certificate.templateId).subscribe(
+						(result) => {
+							this.errorMessage = null;
+							this.certificateTemplate = result;
+							//console.log(result);	
+							this.successMessage = null;
+						},
+						(error) => {
+							if (error === 'Server error') {
+								this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+							} else {
+								this.errorMessage = error;
+								
+							}
+						});
+					
+					
+					//this.verify(result);
 					this.resolveLoading();
 				},
 				(error) => {
@@ -94,7 +141,9 @@ export class VerifyCertificateComponent implements OnInit {
 						this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
 					} else {
 						this.errorMessage = error;
+						
 					}
+					this.currentCertId = null;
 					this.resolveLoading();
 				});
 		} else {
@@ -106,6 +155,7 @@ export class VerifyCertificateComponent implements OnInit {
 		}
 	}
 
+	/*
 	verify(certificate: PersonalCertificate): void {
 		// certificate integrity
 		const hash = certificate.hash;
@@ -114,18 +164,11 @@ export class VerifyCertificateComponent implements OnInit {
 			this.steps[0].passed = hash === sha256(JSON.stringify(certificate));
 			this.steps[0].done = true;
 		}, 2000);
-		// this.steps[0].passed = hash === sha256(JSON.stringify(certificate));
-		// this.steps[0].done = true;
-		// console.log(hash);
-		// console.log(sha256(JSON.stringify(result)));
-
-		// issuer identity
 		setTimeout(() => {
 			this.steps[1].done = true;
 		}, 3000);
-		// this.steps[1].done = true;
 	}
-
+*/
 	registerLoading(key = 'loading'): void {
 		this.loadingService.register(key);
 	}
@@ -133,5 +176,6 @@ export class VerifyCertificateComponent implements OnInit {
 	resolveLoading(key = 'loading'): void {
 		this.loadingService.resolve(key);
 	}
+	
 
 }
