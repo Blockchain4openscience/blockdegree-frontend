@@ -34,10 +34,52 @@
 	</mat-card>
 	<mat-card *ngIf="currentCertId">
 		<mat-card-title>
-			Verification Steps of Certificate: <strong>{{currentCertId}}</strong>
+			Personal Certificate {{currentCertId}} 
 		</mat-card-title>
 		<mat-card-content>
-			<mat-list>
+			<table class="table" *ngIf="certificateTemplate">
+				<tr>
+					<th>Badge Name</th>
+					<td>{{certificateTemplate.badge.name}}</td>
+				</tr>
+				<tr>
+					<th>Badge description</th>
+					<td>{{certificateTemplate.badge.description}}</td>
+				</tr>
+				<tr>
+					<th>Recipient Name</th>
+					<td>{{certificate.recipientProfile.name}}</td>
+				</tr>
+				<tr>
+					<th>Recipient e-mail</th>
+					<td>{{certificate.recipient.email}}</td>
+				</tr>
+				<tr>
+					<th>Issuer Name</th>
+					<td>{{certificateTemplate.badge.issuer.name}}</td>
+				</tr>
+				<tr>
+					<th>Issuer url</th>
+					<td>{{certificateTemplate.badge.issuer.urln}}</td>
+				</tr>
+				<tr>
+					<th>Issuer e-mail</th>
+					<td>{{certificateTemplate.badge.issuer.email}}</td>
+				</tr>
+				<tr>
+					<th>School name</th>
+					<td>{{certificateTemplate.badge.issuer.school.name}}</td>
+				</tr>
+				<tr>
+					<th>School e-mail</th>
+					<td>{{certificateTemplate.badge.issuer.school.email}}</td>
+				</tr>
+				<tr>
+					<th>Signature lines</th>
+					<td>{{certificateTemplate.badge.issuer.signatureLines.jobtitle}} {{ certificateTemplate.badge.issuer.signatureLines.name}}</td>
+				</tr>
+			</table>
+			<!--<mat-list>
 				<ng-template let-step let-last="last" ngFor [ngForOf]="steps">
 					<mat-list-item>
 						<div matListAvatar>
@@ -51,7 +93,7 @@
 					</mat-list-item>
 					<mat-divider *ngIf="!last"></mat-divider>
 				</ng-template>
-			</mat-list>
+			</mat-list>-->
 		</mat-card-content>
 	</mat-card>
 </div>

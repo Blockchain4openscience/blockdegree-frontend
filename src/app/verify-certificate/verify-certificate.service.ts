@@ -8,7 +8,7 @@ export class VerifyCertificateService {
 
 	private NAMESPACE: string = 'PersonalCertificate';
 
-  constructor(private dataService: DataService<PersonalCertificate>) { }
+	constructor(private dataService: DataService<PersonalCertificate>) { }
 
 	public getAsset(id: any): Observable<PersonalCertificate> {
 		return this.dataService.getSingle(this.NAMESPACE, id);
