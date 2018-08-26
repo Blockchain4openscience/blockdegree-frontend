@@ -41,7 +41,7 @@
 				<span>Hi, {{authService.currentUser.firstName}}</span>
 			</div>
 		</div>
-		<mat-toolbar class="pad-none push-bottom-md">
+		<mat-toolbar *ngIf="authService.currentUser" class="pad-none push-bottom-md">
 			<nav mat-tab-nav-bar class="pull-bottom-xl pull-top-md text-upper" flex>
 				<a *ngFor="let route of routes" mat-tab-link [routerLink]="route.name">
 					<span>{{route.displayName}}</span>

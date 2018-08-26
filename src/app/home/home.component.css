@@ -14,3 +14,7 @@
 body {
 	background-color: red;
 }
+
+.table > thead > tr > th {
+	padding: 15px;
+}
