@@ -36,6 +36,14 @@ export class AddRoster extends Transaction {
 	recipientsInfo: RecipientInfo[];
 }
 
+export class PersonalCertificateHistory extends Transaction {
+	certId: string;
+}
+
+export class AdministratorHistory extends Transaction {
+	email: string;
+}
+
 export class RecipientInfo {
 	certId: string;
 	recipient: Recipient;

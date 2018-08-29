@@ -3,6 +3,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {CertificateTemplateService} from '../CertificateTemplate.service';
 import {TdLoadingService} from '@covalent/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
+import {AuthService} from "../../auth/auth.service";
 
 @Component({
   selector: 'app-create-certificate-template-dialog',
@@ -14,7 +15,7 @@ export class CreateCertificateTemplateDialogComponent implements OnInit {
 
 	certificateTemplateForm: FormGroup;
 	templateId = new FormControl(null, Validators.required);
-	globalAdministrator = new FormControl(null, Validators.required);
+	globalAdministrator = new FormControl(this.authService.currentUser.email, Validators.required);
 	// typeC = new FormControl(null, Validators.required);
 	// context = new FormControl(null, Validators.required);
 	// revoked = new FormControl(null, Validators.required);
@@ -52,6 +53,7 @@ export class CreateCertificateTemplateDialogComponent implements OnInit {
 
 	constructor(private serviceCertificateTemplate: CertificateTemplateService,
 							private loadingService: TdLoadingService,
+							private authService: AuthService,
 							@Inject(FormBuilder) fb: FormBuilder,
 							public dialogRef: MatDialogRef<CreateCertificateTemplateDialogComponent>,
 							@Inject(MAT_DIALOG_DATA) public data: any) {
@@ -97,6 +99,7 @@ export class CreateCertificateTemplateDialogComponent implements OnInit {
 			// context: this.context,
 			// revoked: this.revoked
 		});
+		this.globalAdministrator.disable();
 	};
 
   ngOnInit() { }

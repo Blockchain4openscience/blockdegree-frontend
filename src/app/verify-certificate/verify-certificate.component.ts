@@ -4,6 +4,7 @@ import {TdLoadingService} from '@covalent/core';
 import {VerifyCertificateService} from './verify-certificate.service';
 import {sha256} from '../shared/sha256'
 import {PersonalCertificate} from '../org.degree';
+import {AuthService} from "../auth/auth.service";
 
 @Component({
 	selector: 'app-verify-certificate',
@@ -17,7 +18,8 @@ export class VerifyCertificateComponent implements OnInit {
 	errorMessage: string;
 	successMessage: string;
 
-	private Transaction;
+	private personalCertificateHistory: any[] = [];
+	private administratorHistory: any[] = [];
 
 	certId = new FormControl(null, Validators.required);
 	// transactionId = new FormControl('', Validators.required);
@@ -39,6 +41,7 @@ export class VerifyCertificateComponent implements OnInit {
 
 	constructor(private verifyCertificateService: VerifyCertificateService,
 							private loadingService: TdLoadingService,
+							private authService: AuthService,
 							public fb: FormBuilder) {
 		this.myForm = fb.group({
 			certId: this.certId,
@@ -82,12 +85,12 @@ export class VerifyCertificateComponent implements OnInit {
 				(result) => {
 					this.currentCertId = this.certId.value;
 					this.errorMessage = null;
-					this.myForm.reset();
+					// this.myForm.reset();
 					// this.successMessage = ' Transaction ' + result.transactionId + ' submitted successfully.';
 					this.successMessage = null;
 					console.log(result);
-					this.verify(result);
-					this.resolveLoading();
+					this.verifyHash(result);
+					// this.resolveLoading();
 				},
 				(error) => {
 					if (error === 'Server error') {
@@ -96,6 +99,101 @@ export class VerifyCertificateComponent implements OnInit {
 						this.errorMessage = error;
 					}
 					this.resolveLoading();
+				}, () => {
+					const transaction = {
+						$class: 'org.degree.PersonalCertificateHistory',
+						'certId': this.certId.value,
+						// 'transactionId': this.transactionId.value,
+						// 'timestamp': this.timestamp.value
+					};
+					this.verifyCertificateService.requestPersonalCertificateHistory(transaction).subscribe(
+						(data) => {
+							console.log(data);
+							this.verifyCertificateService.getPersonalCertificateHistory(data.transactionId).subscribe(
+								async (results) => {
+									this.errorMessage = null;
+									// this.myForm.reset();
+									// this.successMessage = ' Transaction ' + '' + ' submitted successfully.';
+									console.log(results);
+									results = results[0].eventsEmitted[0].results;
+									for (let i = 0; i < results.length; i++) {
+										const result = JSON.parse(results[i]);
+										const record = {
+											historianRecord: await this.verifyCertificateService.getHistorianRecord(result.tx_id),
+											value: JSON.parse(result.value)
+										};
+										this.personalCertificateHistory.push(record);
+									}
+									console.log(this.personalCertificateHistory);
+									// this.verifyIssuer();
+									// this.resolveLoading();
+								},
+								(error) => {
+									if (error === 'Server error') {
+										this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+									} else {
+										this.errorMessage = error;
+									}
+									this.resolveLoading();
+								}
+							);
+						},
+						(error) => {
+							if (error === 'Server error') {
+								this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+							} else {
+								this.errorMessage = error;
+							}
+							this.resolveLoading();
+						},
+						() => {
+							const transaction = {
+								$class: 'org.degree.AdministratorHistory',
+								'email': this.authService.currentUser.email,
+								// 'transactionId': this.transactionId.value,
+								// 'timestamp': this.timestamp.value
+							};
+							this.verifyCertificateService.requestAdministratorHistory(transaction).subscribe(
+								(data) => {
+									console.log(data);
+									this.verifyCertificateService.getPersonalCertificateHistory(data.transactionId).subscribe(
+										async (results) => {
+											this.errorMessage = null;
+											// this.myForm.reset();
+											// this.successMessage = ' Transaction ' + '' + ' submitted successfully.';
+											console.log(results);
+											results = results[0].eventsEmitted[0].results;
+											for (let i = 0; i < results.length; i++) {
+												const result = JSON.parse(results[i]);
+												const record = {
+													historianRecord: await this.verifyCertificateService.getHistorianRecord(result.tx_id),
+													value: JSON.parse(result.value)
+												};
+												this.administratorHistory.push(record);
+											}
+											console.log(this.administratorHistory);
+											this.verifyIssuer();
+											this.resolveLoading();
+										},
+										(error) => {
+											if (error === 'Server error') {
+												this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+											} else {
+												this.errorMessage = error;
+											}
+											this.resolveLoading();
+										}
+									);
+								},
+								(error) => {
+									if (error === 'Server error') {
+										this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
+									} else {
+										this.errorMessage = error;
+									}
+									this.resolveLoading();
+								});
+						});
 				});
 		} else {
 			Object.keys(this.myForm.controls).forEach(field => {
@@ -106,7 +204,7 @@ export class VerifyCertificateComponent implements OnInit {
 		}
 	}
 
-	verify(certificate: PersonalCertificate): void {
+	verifyHash(certificate: PersonalCertificate): void {
 		// certificate integrity
 		const hash = certificate.hash;
 		delete certificate.hash;
@@ -118,9 +216,12 @@ export class VerifyCertificateComponent implements OnInit {
 		// this.steps[0].done = true;
 		// console.log(hash);
 		// console.log(sha256(JSON.stringify(result)));
+	}
 
+	verifyIssuer(): void {
 		// issuer identity
 		setTimeout(() => {
+			this.steps[1].passed = this.personalCertificateHistory[0].historianRecord.transactionTimestamp >= this.administratorHistory[0].historianRecord.transactionTimestamp;
 			this.steps[1].done = true;
 		}, 3000);
 		// this.steps[1].done = true;

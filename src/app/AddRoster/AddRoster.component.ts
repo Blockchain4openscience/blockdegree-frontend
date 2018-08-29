@@ -17,6 +17,7 @@ import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Valid
 import {AddRosterService} from './AddRoster.service';
 import {TdLoadingService} from '@covalent/core';
 import * as csv from 'papaparse';
+import {AuthService} from "../auth/auth.service";
 
 @Component({
 	selector: 'app-add-roster',
@@ -28,7 +29,7 @@ export class AddRosterComponent implements OnInit {
 
 	myForm: FormGroup;
 	templateId = new FormControl(null, Validators.required);
-	localAdministrator = new FormControl(null, Validators.required);
+	localAdministrator = new FormControl(this.authService.currentUser.email, Validators.required);
 	rosterFile = new FormControl(null, [Validators.required, this.fileTypeValidator()]);
 
 	file: File;
@@ -38,12 +39,14 @@ export class AddRosterComponent implements OnInit {
 
 	constructor(private serviceAddRoster: AddRosterService,
 							private loadingService: TdLoadingService,
+							private authService: AuthService,
 							fb: FormBuilder) {
 		this.myForm = fb.group({
 			templateId: this.templateId,
 			localAdministrator: this.localAdministrator,
 			rosterFile: this.rosterFile,
 		});
+		this.localAdministrator.disable();
 	};
 
 	ngOnInit(): void {}
@@ -80,7 +83,7 @@ export class AddRosterComponent implements OnInit {
 			this.Transaction = {
 				$class: 'org.degree.AddRoster',
 				'templateId': this.templateId.value,
-				'localAdministrator': this.localAdministrator.value,
+				'localAdministrator': this.authService.currentUser.email,
 				'recipientsInfo': await this.parseRosterFile(this.rosterFile.value)
 			};
 
