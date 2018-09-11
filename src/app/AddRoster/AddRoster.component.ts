@@ -12,12 +12,13 @@
  * limitations under the License.
  */
 
-import {Component, OnInit} from '@angular/core';
+import {Directive, Component, OnInit} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {AddRosterService} from './AddRoster.service';
 import {TdLoadingService} from '@covalent/core';
 import * as csv from 'papaparse';
 import {AuthService} from "../auth/auth.service";
+import {Router} from '@angular/router';
 
 @Component({
 	selector: 'app-add-roster',
@@ -40,6 +41,7 @@ export class AddRosterComponent implements OnInit {
 	constructor(private serviceAddRoster: AddRosterService,
 							private loadingService: TdLoadingService,
 							private authService: AuthService,
+							private router: Router,
 							fb: FormBuilder) {
 		this.myForm = fb.group({
 			templateId: this.templateId,
@@ -49,7 +51,19 @@ export class AddRosterComponent implements OnInit {
 		this.localAdministrator.disable();
 	};
 
-	ngOnInit(): void {}
+	async ngOnInit() {
+		const isAuthenticated = await this.authService.isAuthenticated();
+		const hasSignedUp = await this.authService.hasSignedUp();
+		console.log(isAuthenticated, hasSignedUp);
+		if (isAuthenticated && hasSignedUp){
+			await this.authService.setCurrentUser();
+		}
+		else if (isAuthenticated && !hasSignedUp) {
+				this.router.navigate(['/signup']);
+		} else {
+				this.router.navigate(['/verify-certificate']);
+		}
+	}
 
 	/**
 	 * Event handler for changing the checked state of a checkbox (handles array enumeration values)

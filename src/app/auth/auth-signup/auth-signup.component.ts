@@ -16,10 +16,6 @@ export class AuthSignupComponent implements OnInit {
 
 	myForm: FormGroup;
 	email = new FormControl(null, [Validators.required, Validators.email]);
-	firstName = new FormControl(null, Validators.required);
-	lastName = new FormControl(null, Validators.required);
-	publicKey = new FormControl(null, Validators.required);
-	private participant;
 	private successMessage;
 	private errorMessage;
 
@@ -28,10 +24,7 @@ export class AuthSignupComponent implements OnInit {
 							private router: Router,
 							fb: FormBuilder) {
 		this.myForm = fb.group({
-			email: this.email,
-			firstName: this.firstName,
-			lastName: this.lastName,
-			publicKey: this.publicKey
+			email: this.email
 		});
 	};
 
@@ -42,15 +35,7 @@ export class AuthSignupComponent implements OnInit {
   	this.errorMessage = null;
   	if (this.myForm.valid) {
   		this.registerLoading();
-			this.participant = {
-				$class: 'org.degree.Administrator',
-				'email': this.email.value,
-				'firstName': this.firstName.value,
-				'lastName': this.lastName.value,
-				'publicKey': this.publicKey.value
-			};
-
-			this.authService.signUp(this.participant)
+			this.authService.signUp(this.email.value)
 				.then(async () => {
 					this.errorMessage = null;
 					this.myForm.reset();
@@ -60,9 +45,12 @@ export class AuthSignupComponent implements OnInit {
 				})
 				.catch((error) => {
 					console.log(error);
-					if (error === 'Server error') {
+					if(error.status == 404){
+						this.errorMessage = 'User not registred in bussiness network';
+					}
+					else if (error === 'Server error') {
 						this.errorMessage = 'Could not connect to REST server. Please check your configuration details';
-					}	else {
+					} else {
 						this.errorMessage = error;
 					}
 				});
