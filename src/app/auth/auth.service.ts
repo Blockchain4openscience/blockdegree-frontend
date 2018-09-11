@@ -3,6 +3,7 @@ import {Administrator, ExternalUser} from '../org.degree';
 import {Observable} from 'rxjs';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {AdministratorService} from '../Administrator/Administrator.service';
+import { CookieService } from 'ngx-cookie-service';
 
 @Injectable({
 	providedIn: 'root'
@@ -10,18 +11,21 @@ import {AdministratorService} from '../Administrator/Administrator.service';
 export class AuthService {
 
 	currentUser: Administrator;
+	token = 'UNKNOWN';
 
 	constructor(private httpClient: HttpClient,
-							private administratorService: AdministratorService) {
+				private administratorService: AdministratorService,
+				private cookieService: CookieService
+			) {
 		this.currentUser = null;
 	}
 
-	signUp(administrator): Promise<any> {
-		return this.httpClient.post('http://localhost:3001/api/Administrator', administrator).toPromise()
-			.then(() => {
+	signUp(email:string): Promise<any> {		
+		return this.httpClient.head('http://localhost:3001/api/Administrator/' +  email).toPromise()
+			.then((results) => {
 				const identity = {
-					participant: 'org.degree.Administrator#' + administrator.email,
-					userID: administrator.email,
+					participant: 'org.degree.Administrator#' + email,
+					userID: email,
 					options: {}
 				};
 
@@ -40,7 +44,11 @@ export class AuthService {
 					withCredentials: true,
 					headers
 				}).toPromise();
-			});
+			})
+			.catch(error => {
+				console.log(error);
+				return error.status;	
+		});
 	}
 
 	isAuthenticated(): Promise<boolean> {
@@ -77,4 +85,14 @@ export class AuthService {
 			});
 	}
 
+	logout(): Promise<void> {
+		return this.httpClient.get('http://localhost:3000/auth/logout').toPromise()
+			.then(() => {
+				this.currentUser = null;
+			})
+			.catch(error => {
+				console.log(error);
+				return error.status;
+			});
+	}
 }

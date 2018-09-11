@@ -16,6 +16,7 @@ import {Injectable} from '@angular/core';
 import {DataService} from '../data.service';
 import {Observable} from 'rxjs';
 import {CertificateTemplate} from '../org.degree';
+import {HttpClient} from '@angular/common/http';
 
 // Can be injected into a constructor
 @Injectable()
@@ -25,7 +26,8 @@ export class CertificateTemplateService {
 	private NAMESPACE: string = 'CertificateTemplate';
 
 
-	constructor(private dataService: DataService<CertificateTemplate>) {
+	constructor(private dataService: DataService<CertificateTemplate>,
+				private httpClient: HttpClient) {
 	};
 
 	public getAll(): Observable<CertificateTemplate[]> {
@@ -33,7 +35,8 @@ export class CertificateTemplateService {
 	}
 
 	public getAsset(id: any): Observable<CertificateTemplate> {
-		return this.dataService.getSingle(this.NAMESPACE, id);
+		return this.httpClient.get<CertificateTemplate>('http://localhost:3001/api/CertificateTemplate/' + id);
+		//return this.dataService.getSingle(this.NAMESPACE, id);
 	}
 
 	public addAsset(itemToAdd: any): Observable<CertificateTemplate> {

@@ -88,7 +88,7 @@ export class DataService<Type> {
 		console.log('Query ', ns);
 		const params = (new HttpParams()).append('transactionId', id);
 
-		return this.httpClient.get(this.actionUrl + 'queries/' + ns, {observe: 'response', headers: this.headers, params: params})
+		return this.httpClient.get('http://localhost:3001/api/queries/' + ns, {observe: 'response', headers: this.headers, params: params})
 			.pipe(
 				map(this.extractData),
 				catchError(this.handleError)

@@ -29,6 +29,7 @@ import { CreateCertificateTemplateDialogComponent } from './CertificateTemplate/
 import {AddRosterComponent} from './AddRoster/AddRoster.component';
 import { AuthCallbackComponent } from './auth/auth-callback/auth-callback.component';
 import { AuthSignupComponent } from './auth/auth-signup/auth-signup.component';
+import { CookieService } from 'ngx-cookie-service';
 
 // import { TransactionComponent } from './Transaction/Transaction.component'
 
@@ -57,7 +58,8 @@ import { AuthSignupComponent } from './auth/auth-signup/auth-signup.component';
 		MglTimelineModule
 	],
 	providers: [
-		DataService
+		DataService,
+		CookieService
 	],
 	bootstrap: [AppComponent]
 })

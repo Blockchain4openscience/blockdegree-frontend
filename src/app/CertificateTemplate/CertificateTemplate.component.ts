@@ -17,6 +17,8 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {CertificateTemplateService} from './CertificateTemplate.service';
 import {MatDialog} from '@angular/material';
 import {TdLoadingService} from '@covalent/core';
+import {Router} from '@angular/router';
+import {AuthService} from '../auth/auth.service';
 import {CreateCertificateTemplateDialogComponent} from './create-certificate-template-dialog/create-certificate-template-dialog.component';
 
 @Component({
@@ -34,13 +36,26 @@ export class CertificateTemplateComponent implements OnInit {
 	private errorMessage;
 
 	constructor(private serviceCertificateTemplate: CertificateTemplateService,
-							private loadingService: TdLoadingService,
-							public createAssetDialog: MatDialog,
-							public updateAssetDialog: MatDialog,
-							public deleteAssetDialog: MatDialog) {
+				private loadingService: TdLoadingService,
+				public createAssetDialog: MatDialog,
+				public updateAssetDialog: MatDialog,
+				public deleteAssetDialog: MatDialog,
+				private authService: AuthService,
+				private router: Router) {
 	};
 
-	ngOnInit(): void {
+	async ngOnInit() {
+		const isAuthenticated = await this.authService.isAuthenticated();
+		const hasSignedUp = await this.authService.hasSignedUp();
+		console.log(isAuthenticated, hasSignedUp);
+		if (isAuthenticated && hasSignedUp){
+			await this.authService.setCurrentUser();
+		}
+		else if (isAuthenticated && !hasSignedUp) {
+			  this.router.navigate(['/signup']);
+		} else {
+			  this.router.navigate(['/verify-certificate']);
+		}
 		this.loadAll();
 	}
 

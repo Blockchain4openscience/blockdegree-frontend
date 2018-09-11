@@ -38,7 +38,8 @@
 				<a mat-raised-button href="http://localhost:3000/auth/google"><mat-icon>google</mat-icon>Sign in with google</a>
 			</div>
 			<div *ngIf="authService.currentUser" layout="row" layout-align="center end">
-				<span>Hi, {{authService.currentUser.firstName}}</span>
+				<span>Hi, {{ authService.currentUser.firstName }} </span>
+				<button mat-raised-button color="accent" (click)="logout()">Logout</button>
 			</div>
 		</div>
 		<mat-toolbar *ngIf="authService.currentUser" class="pad-none push-bottom-md">

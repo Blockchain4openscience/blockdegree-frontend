@@ -17,6 +17,7 @@ import {TdMediaService} from '@covalent/core';
 import {MatIconRegistry} from '@angular/material';
 import {DomSanitizer} from '@angular/platform-browser';
 import {AuthService} from './auth/auth.service';
+import {Router} from '@angular/router';
 
 @Component({
 	selector: 'app-root',
@@ -95,7 +96,8 @@ export class AppComponent implements AfterViewInit {
 	constructor(
 		private authService: AuthService,
 		private matIconRegistry: MatIconRegistry,
-		private domSanitizer: DomSanitizer
+		private domSanitizer: DomSanitizer,
+		private router: Router
 	) {
 		this.matIconRegistry.addSvgIcon(
 			'google',
@@ -104,21 +106,17 @@ export class AppComponent implements AfterViewInit {
 	}
 
 	ngAfterViewInit() {
-		// $('.nav a').on('click', function () {
-		// 	$('.nav').find('.active').removeClass('active');
-		// 	$(this).parent().addClass('active');
-		// });
-		//
-		// $('.dropdown').on('show.bs.dropdown', function (e) {
-		// 	$(this).find('.dropdown-menu').first().stop(true, true).slideDown(300);
-		// });
-		//
-		// $('.dropdown').on('hide.bs.dropdown', function (e) {
-		// 	$(this).find('.dropdown-menu').first().stop(true, true).slideUp(200);
-		// });
-		//
-		// $('.dropdown-menu li').on('click', function () {
-		// 	$(this).parent().parent().addClass('active');
-		// });
+		
+	}
+
+	logout() : void {
+		this.authService.logout()
+		.then(() => {
+			this.router.navigate(['/verify-certificate'])
+		})
+		.then(error=>{
+			console.log(error);
+		})
+
 	}
 }
