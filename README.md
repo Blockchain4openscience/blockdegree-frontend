@@ -1,4 +1,4 @@
-# Digital Degree (degree-bnav2:frontend)
+# Digital Degree (Blockdegree-frontend)
 
 A proof of concept (PoC) of a permissioned blockchain for verifiable digital diplomas base on the [Blockcerts](https://www.blockcerts.org/about.html) open standard. Digital diplomas are a transparent way of verifying professional or educational accomplishments for a global workforce and it’s a first step toward supplying the full record of a learning experience (transcripts, projects,..). Blockcerts is an open-source project initially led by MIT’s media lab and Learning Machine. Blockcerts focus has been on issuing the certificates on Bitcoin and Ethereum. Our goal is to extend the certification process in a permissioned blockchain using the Hyperledger framework and tools. The initial aim is to build a ledger of digital diplomas to be deployed for a university and extend its possibilities to other institutions.
 
@@ -28,48 +28,75 @@ Follow *step six* to import the business network card for the Hyperledger Fabric
 `````
 composer card import -f PeerAdmin@fabric-network.card
 `````
-In *step seven* we install the Hyperledger Composer business network onto the Hyperledger Fabric peer nodes. The business network `block-degree` is defined in bna file, `block-degree@0.0.1.bna` and its located in the repository. A forlder with the specific business network model files, scripts and queries that are packaged in the bna file (using `composer archive create`) is located in the [blockdegree repository](https://github.com/ccastroiragorri/blockdegree/tree/master/degree-bnav2). 
+In *step seven* we install the Hyperledger Composer business network onto the Hyperledger Fabric peer nodes. The business network `blockdegreesv1` is defined in bna file, `blockdegreesv1@0.0.1.bna` and its located in the repository. A forlder with the specific business network model files, scripts and queries that are packaged in the bna file (using `composer archive create`) is located in the [blockdegree repository](https://github.com/Blockchain4openscience/blockdegree/tree/master/degree-bnav2). 
+
+It is important to update the business network by changing the name or the version in `package.json` file
 `````
-composer network install -c PeerAdmin@fabric-network -a block-degree@0.0.1.bna
+{
+  "name": "blockdegrees",
+"version": "0.0.1",......}
+`````
+then generate the business network achive from the directory where the model file has been created
+`````
+composer archive create -t dir -n .
+`````
+then save the new bna file into the file `certificates` ans install the bna.
+
+`````
+composer network install -c PeerAdmin@fabric-network -a blockdegreesv1@0.0.1.bna
 `````
 In *step eight* we start the blockchain business network
 `````
-composer network start --networkName block-degree --networkVersion 0.0.1 -A admin -S adminpw -c PeerAdmin@fabric-network
+composer network start --networkName blockdegreesv1 --networkVersion 0.0.1 -A admin -S adminpw -c PeerAdmin@fabric-network
 `````
 In *step nine* we import the business network card for the business network administrator
 `````
-composer card import -f admin@block-degree.card
+composer card import -f admin@blockdegreesv1.card
 `````
 In *step ten* we test the connection to the blockchain business network
 `````
-composer network ping -c admin@block-degree
+composer network ping -c admin@blockdegreesv1
+`````
+## Creating a external users participant 
+Add a external user participant in the business network  
+`````
+composer participant add -c admin@blockdegreesv1 -d '
+{"$class":"org.degree.ExternalUser","email":"guest","firstName":"guest","lastName": "guest","publicKey": "guest"}'
+`````
+Create a business card for external user (use namespace for participant)
+`````
+composer identity issue -u guest -a org.degree.ExternalUser#guest -x true -c admin@blockdegreesv1 -f guest@blockdegreesv1.card 
+`````
+Import the business card created in the previous step
+`````
+composer card import -f guest@blockdegreesv1.card
 `````
 
 ## Interacting with the business network using the REST server and the Angular application
+
+To create the REST API using the guest card run the following command: 
+`````
+composer-rest-server  -c guest@blockdegreesv1 -n never -p 3001
+`````
+use `guest@blockdegreesv1` as the card name. User only has access as external user
 
 To allow users to log-in with the google api we need first to install the [passport](http://www.passportjs.org/).
 `````
 npm install -g passport-google-oauth2
 `````
-To create the REST API run the following command: 
-`````
-composer-rest-server  -c admin@block-degree -n never -p 3001
-`````
-use `admin@block-degree` as the card name.
-
 In a different console we must start a second REST server
 `````
 export COMPOSER_PROVIDERS='{    "google": {        "provider": "google",        "module": "passport-google-oauth2",        "clientID": "449143484410-cd3p44o8qgbcihfmck8lu4uj6s5t4c0j.apps.googleusercontent.com",        "clientSecret": "YyEbhukLeI1ndcbpJQVpn3c4",        "authPath": "/auth/google",        "callbackURL": "/auth/google/callback",        "scope": "https://www.googleapis.com/auth/plus.login",        "successRedirect": "http://localhost:4200/callback",        "failureRedirect": "/"    }}'
 `````
 `````
-composer-rest-server -c admin@block-degree -n never -a true -m true -w true
+composer-rest-server -c admin@blockdegreesv1 -n never -a true -m true -w true
 `````
-use `admin@block-degree` as the card name.
+use `admin@blockdegreesv1` as the card name.
 
-In order to build the user interfaces for this busness network please clone the repository and follow the instructions
+In order to build the user interfaces for this business network please clone the repository and follow the instructions
 
 `````
-git clone https://github.com/Camilo1090/blockdegree-frontend
+git clone https://github.com/Blockchain4openscience/blockdegree-frontend/tree/verify_steps
 `````
 Now navigate to the folder. Check that npm is installed by running
 `````
@@ -85,7 +112,7 @@ npm start
 `````
 and navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files. 
 
-Once the app is loaded log-in with gmail account and create administrator then follow the instructions to create the certificate template, personalize the certificates and verify the certificates. Use the [example](https://github.com/ccastroiragorri/blockdegree/blob/master/degree-bnav2/README.md) designed for the hyperledger playground to test the functionality of the business network using the bna deployed onto fabric and the frontends. 
+Once the app is loaded log-in with gmail account and create administrator then follow the instructions to create the certificate template, personalize the certificates and verify the certificates. Use the [example](https://github.com/Blockchain4openscience/blockdegree/tree/master/degree-bnav2) designed for the hyperledger playground to test the functionality of the business network using the bna deployed onto fabric and the frontends. 
 
 ## Destroy a previous set up
 After testing the bna desgined with Composer and deployed onto Fabric it is important to tidy up by stopping fabric. Navigate to the folder where you initially started the Hyperledger Fabric network.
@@ -97,6 +124,10 @@ After testing the bna desgined with Composer and deployed onto Fabric it is impo
 delete the composer cards
 `````
 composer card delete -c name
+`````
+delete the file sytem card store
+`````
+rm -fr ~/.composer
 `````
 and clear the docker cointainers.
 
