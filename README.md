@@ -33,7 +33,7 @@ In *step seven* we install the Hyperledger Composer business network onto the Hy
 It is important to update the business network by changing the name or the version in `package.json` file
 `````
 {
-  "name": "blockdegrees",
+  "name": "blockdegreesv1",
 "version": "0.0.1",......}
 `````
 then generate the business network achive from the directory where the model file has been created
@@ -57,33 +57,19 @@ In *step ten* we test the connection to the blockchain business network
 `````
 composer network ping -c admin@blockdegreesv1
 `````
-## Creating a external users participant 
-Add a external user participant in the business network  
-`````
-composer participant add -c admin@blockdegreesv1 -d '
-{"$class":"org.degree.ExternalUser","email":"guest","firstName":"guest","lastName": "guest","publicKey": "guest"}'
-`````
-Create a business card for external user (use namespace for participant)
-`````
-composer identity issue -u guest -a org.degree.ExternalUser#guest -x true -c admin@blockdegreesv1 -f guest@blockdegreesv1.card 
-`````
-Import the business card created in the previous step
-`````
-composer card import -f guest@blockdegreesv1.card
-`````
 
-## Interacting with the business network using the REST server and the Angular application
+## Interacting with the business network using the REST server 
 
-To create the REST API using the guest card run the following command: 
-`````
-composer-rest-server  -c guest@blockdegreesv1 -n never -p 3001
-`````
-use `guest@blockdegreesv1` as the card name. User only has access as external user
-
-To allow users to log-in with the google api we need first to install the [passport](http://www.passportjs.org/).
+To allow users to log-in with the google api we need first to install (you only need to do this once) the [passport](http://www.passportjs.org/).
 `````
 npm install -g passport-google-oauth2
 `````
+To create the REST API run the following command: 
+`````
+composer-rest-server  -c admin@blockdegreesv1 -n never -p 3001
+`````
+use `admin@blockdegreesv1` as the card name.
+
 In a different console we must start a second REST server
 `````
 export COMPOSER_PROVIDERS='{    "google": {        "provider": "google",        "module": "passport-google-oauth2",        "clientID": "449143484410-cd3p44o8qgbcihfmck8lu4uj6s5t4c0j.apps.googleusercontent.com",        "clientSecret": "YyEbhukLeI1ndcbpJQVpn3c4",        "authPath": "/auth/google",        "callbackURL": "/auth/google/callback",        "scope": "https://www.googleapis.com/auth/plus.login",        "successRedirect": "http://localhost:4200/callback",        "failureRedirect": "/"    }}'
@@ -92,6 +78,8 @@ export COMPOSER_PROVIDERS='{    "google": {        "provider": "google",        
 composer-rest-server -c admin@blockdegreesv1 -n never -a true -m true -w true
 `````
 use `admin@blockdegreesv1` as the card name.
+
+## Front-end based on Angular application
 
 In order to build the user interfaces for this business network please clone the repository and follow the instructions
 
@@ -132,7 +120,9 @@ rm -fr ~/.composer
 and clear the docker cointainers.
 
 `````
-docker kill $(docker ps -q)
-docker rm $(docker ps -aq)
+./teardownAllDocker.sh
+`````
+Select option 1- Kill and remove only the containers. Then delete the images created, 
+`````
 docker rmi $(docker images dev-* -q)
 `````
